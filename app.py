@@ -1,8 +1,10 @@
+from nbformat import write
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 import numpy as np 
 import requests 
+#from conexion_sql_server import connect
 from utils import geo_json_mncp,load_pregunta
 APIKEY = "cbff05426dd10f787f758fd2cc3af796"
 
@@ -17,6 +19,7 @@ def app():
     pregunta_2()
     pregunta_3()
     estadisticas(data)
+    mejores_percentiles(data)
 
 def pre(data):
     if st.checkbox("Mostrar tabla de datos completa"):
@@ -145,8 +148,21 @@ def estadisticas(data):
         col3.metric("Varianza", round(resultados.var(),1))
 
         data_atlantico.rename(columns = {'cole_nombre_sede':'Nombre del Colegio', 'punt_global':'Puntaje'}, inplace = True)
-        st.write(data_atlantico.groupby(['Nombre del Colegio']).agg({'Puntaje':['mean',lambda x: pd.DataFrame.std(x,ddof=0),'var']}).reset_index())
+        st.write(data_atlantico.groupby(['Nombre del Colegio'],dropna=False).agg({'Puntaje':['mean',lambda x: pd.DataFrame.std(x,ddof=0),'var']}).reset_index())
 
+# Tabla de mejores percentiles por colegio y por municipio
+def mejores_percentiles(data):
+        data_atlantico = data[data["cole_depto_ubicacion"] == "ATLANTICO"]
+        data_atlantico.rename(columns = {'cole_nombre_establecimiento':'Nombre del Colegio'}, inplace = True)
+        #mun=data_atlantico['cole_mcpio_ubicacion']
+        df = data_atlantico[['Nombre del Colegio','cole_mcpio_ubicacion','percentil_lectura_critica','percentil_matematicas','percentil_c_naturales','percentil_sociales_ciudadanas','percentil_ingles']]
+
+        df=df.groupby(['Nombre del Colegio'],dropna=False).agg(Percentil_Mat=('percentil_matematicas','mean'),Percentil_Lect_Crit=('percentil_lectura_critica','mean')).reset_index()
+
+        df=df.sort_values(by=['Percentil_Mat','Percentil_Lect_Crit'],ascending=False).reset_index(drop=True)
+
+        st.write("### Mejores percentiles por colegio")
+        st.write(df,use_column_width=True)
 
 
 app()
