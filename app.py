@@ -156,13 +156,35 @@ def mejores_percentiles(data):
         data_atlantico.rename(columns = {'cole_nombre_establecimiento':'Nombre del Colegio'}, inplace = True)
         #mun=data_atlantico['cole_mcpio_ubicacion']
         df = data_atlantico[['Nombre del Colegio','cole_mcpio_ubicacion','percentil_lectura_critica','percentil_matematicas','percentil_c_naturales','percentil_sociales_ciudadanas','percentil_ingles']]
-
-        df=df.groupby(['Nombre del Colegio'],dropna=False).agg(Percentil_Mat=('percentil_matematicas','mean'),Percentil_Lect_Crit=('percentil_lectura_critica','mean')).reset_index()
-
-        df=df.sort_values(by=['Percentil_Mat','Percentil_Lect_Crit'],ascending=False).reset_index(drop=True)
-
-        st.write("### Mejores percentiles por colegio")
+        st.write("### Mejores percentiles de matematicas por colegio ")
+        df=df.groupby(['Nombre del Colegio',"cole_mcpio_ubicacion"],dropna=False).agg(Percentil_Mat=('percentil_matematicas','mean')).reset_index()
+        df=df.sort_values(by=['Percentil_Mat'],ascending=False).reset_index(drop=True)
         st.write(df,use_column_width=True)
+        st.write("### Mejores percentiles de Lect_Crit por colegio ")
+        df = data_atlantico[['Nombre del Colegio','cole_mcpio_ubicacion','percentil_lectura_critica','percentil_matematicas','percentil_c_naturales','percentil_sociales_ciudadanas','percentil_ingles']]
+        df=df.groupby(['Nombre del Colegio',"cole_mcpio_ubicacion"],dropna=False).agg(Percentil_Lect_Crit=('percentil_lectura_critica','mean')).reset_index()
+        df=df.sort_values(by=['Percentil_Lect_Crit'],ascending=False).reset_index(drop=True)
+        st.write(df,use_column_width=True)
+
+        st.write("### Mejores percentiles de c_naturales por colegio ")
+        df = data_atlantico[['Nombre del Colegio','cole_mcpio_ubicacion','percentil_lectura_critica','percentil_matematicas','percentil_c_naturales','percentil_sociales_ciudadanas','percentil_ingles']]
+        df=df.groupby(['Nombre del Colegio',"cole_mcpio_ubicacion"],dropna=False).agg(Percentil_c_naturales=('percentil_c_naturales','mean')).reset_index()
+        df=df.sort_values(by=['Percentil_c_naturales'],ascending=False).reset_index(drop=True)
+        st.write(df,use_column_width=True)
+
+        st.write("### Mejores percentiles de sociales_ciudadanas por colegio ")
+        df = data_atlantico[['Nombre del Colegio','cole_mcpio_ubicacion','percentil_lectura_critica','percentil_matematicas','percentil_c_naturales','percentil_sociales_ciudadanas','percentil_ingles']]
+        df=df.groupby(['Nombre del Colegio',"cole_mcpio_ubicacion"],dropna=False).agg(Percentil_sociales_ciudadana=('percentil_sociales_ciudadanas','mean')).reset_index()
+        df=df.sort_values(by=['Percentil_sociales_ciudadana'],ascending=False).reset_index(drop=True)
+        st.write(df,use_column_width=True)
+
+        st.write("### Mejores percentiles de ingles por colegio ")
+        df = data_atlantico[['Nombre del Colegio','cole_mcpio_ubicacion','percentil_lectura_critica','percentil_matematicas','percentil_c_naturales','percentil_sociales_ciudadanas','percentil_ingles']]
+        df=df.groupby(['Nombre del Colegio',"cole_mcpio_ubicacion"],dropna=False).agg(Percentil_ingle=('percentil_ingles','mean')).reset_index()
+        df=df.sort_values(by=['Percentil_ingle'],ascending=False).reset_index(drop=True)
+        st.write(df,use_column_width=True)
+
+
 
 
 app()
