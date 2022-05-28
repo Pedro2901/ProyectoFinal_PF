@@ -75,14 +75,6 @@ def pre(data):
         df.columns = ["Municipio","Conteo"]
         return df
 
-    def get_pos(dpto,munc):
-        response =  requests.get(f"http://api.openweathermap.org/geo/1.0/direct?q={munc},{dpto},&limit={3}&appid={APIKEY}")
-        r = response.json()
-        lat = r[0]['lat']
-        lon = r[0]['lon']
-        new_df = pd.DataFrame.from_dict({'Latitud': [lat],'Longitud': [lon], 'Magnitud': [10]})
-        return new_df
-
     st.write("### ¿Cuántos colegios hay en el departamento del Atlántico?")
     data = grafica1()
     fig = px.bar(data,x="Municipio",y="Conteo")
