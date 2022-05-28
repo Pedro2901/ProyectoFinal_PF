@@ -1,15 +1,10 @@
-from asyncio.windows_events import NULL
 from nbformat import write
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 import numpy as np 
 import matplotlib.pyplot as plt
-from scipy import stats 
-import seaborn as sns 
-import requests 
 from scipy.stats import norm
-#from conexion_sql_server import connect
 from utils import geo_json_mncp,load_pregunta
 APIKEY = "cbff05426dd10f787f758fd2cc3af796"
 data=pd.read_csv("Excel-Atlantico.csv")
