@@ -12,25 +12,59 @@ from scipy.stats import norm
 #from conexion_sql_server import connect
 from utils import geo_json_mncp,load_pregunta
 APIKEY = "cbff05426dd10f787f758fd2cc3af796"
-
-url="https://www.datos.gov.co/resource/rnvb-vnyh.csv"
 data=pd.read_csv("Excel-Atlantico.csv")
 
 
 def app():
-    # Visuals
-    st.title("Colegios del Atlántico")
-    
+    st.title("Sistema de recolección, visualización y análisis de datos de colegios del departamento del Atlántico")
 
-    pre(data)
-    MejoresPruebasPorMunicii()
-    mapa()
-    mejores_percentiles(data)
+    text =  '''
+    Este es un prototipo funcional de una página web con el objetivo de mostrar información relevante sobre los colegios del departamento del Atlántico, para así, poder informar a los padres de familia y apoyarlos en una posible elección de colegio para su hijo.
 
-def pre(data):
+    Este proyecto fue creado y desarrollado por estudiantes de Ingeniería de Sistemas y Computación de la Universidad del Norte como proyecto de grado.
+
+    #### Indice:    
+    - ¿Cuántos colegios hay en el departamento del Atlántico?
+    - Mejor puntaje de pruebas saber de cada colegio por municipio.
+    - ¿Que colegios sacaron la mayor cantidad de personas con puntaje superior a 300?
+    - Análisis de los percentiles de cada materia evaluada en las pruebas saber.
+
+    Para ver la información utilizada en este dashboard oprima en la celda.
+    '''
+
+    st.markdown(text)
+
     if st.checkbox("Mostrar tabla de datos completa"):
         data_atlantico = data[data["COLE_DEPTO_UBICACION"] == "ATLANTICO"]
         st.write(data_atlantico)
+
+    text = '''
+
+        A continuación se presentará información general de los colegios del departamento en forma de tablas y graficos las cuales responden a preguntas cotidianas sobre los colegios en temas generales y de pruebas saber.
+
+    '''
+    st.markdown(text)
+
+    st.write("")
+    pre(data)
+
+    MejoresPruebasPorMunicipio()
+    mapa()
+
+    st.write("## Análisis de los percentiles de cada materia evaluada en las pruebas saber.")
+    text='''
+        En las siguientes tablas se refleja los percentiles de cada materia evaluada en las pruebas saber en el segundo semestre del año 2020. Los cuales se usarán para responder a la siguente pregunta: 
+
+        #### ¿Cuál colegio es mejor para mi hijo? si quiero que obtenga una beca por excelentes resultados en las pruebas saber.
+
+        A continuación se presentan una tabla para cada materia la cual se pueden usar para responder a la pregunta anterior. Cada tabla contiene el nombre del colegio, el departamento al que pertenece y el percentil ordenado de forma descendente. Abajo de este encontrará unas medidas de estadistica descriptiva las cuales ayudan a conocer el comportamiento de los datos que se encuentran en las tablas. Estas son la Media aritmetica, la Varianza y la Desviación Estandar respectivamente.
+
+    '''
+    st.markdown(text)
+    mejores_percentiles(data)
+
+
+def pre(data):
     
     def grafica1():
         df = data[data["COLE_DEPTO_UBICACION"] == "ATLANTICO"]
@@ -48,18 +82,14 @@ def pre(data):
         lon = r[0]['lon']
         new_df = pd.DataFrame.from_dict({'Latitud': [lat],'Longitud': [lon], 'Magnitud': [10]})
         return new_df
-    
-    def grafica3():
-        return get_pos("ATLANTICO","BARRANQUILLA")
 
     st.write("### ¿Cuántos colegios hay en el departamento del Atlántico?")
     data = grafica1()
     fig = px.bar(data,x="Municipio",y="Conteo")
     st.write(fig)
-    text = '''---'''
-    st.markdown(text)
+    
 
-def MejoresPruebasPorMunicii():
+def MejoresPruebasPorMunicipio():
     data_atlantico = data[data["COLE_DEPTO_UBICACION"] == "ATLANTICO"]
     st.write("### Mejor puntaje de pruebas saber de cada colegio por municipio")
     df = data_atlantico[['COLE_MCPIO_UBICACION','PUNT_GLOBAL','COLE_NOMBRE_ESTABLECIMIENTO']].sort_values(by='PUNT_GLOBAL',ascending=False).reset_index(drop=True)
