@@ -1,8 +1,6 @@
-from nbformat import write
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import numpy as np 
 import matplotlib.pyplot as plt
 from scipy.stats import norm
 from utils import geo_json_mncp,load_pregunta
@@ -24,7 +22,7 @@ def app():
     - ¿Que colegios sacaron la mayor cantidad de personas con puntaje superior a 300?
     - Análisis de los percentiles de cada materia evaluada en las pruebas saber.
 
-    Para ver la información utilizada en este dashboard oprima en la celda.
+    La información que se utilizó en este proyecto es proporcionada de la base de datos de Datos Abiertos del Gobierno de Colombia. Para ver la información completa oprima en la celda.
     '''
 
     st.markdown(text)
@@ -78,9 +76,10 @@ def pre(data):
 
 def MejoresPruebasPorMunicipio():
     data_atlantico = data[data["COLE_DEPTO_UBICACION"] == "ATLANTICO"]
+    data_atlantico.rename(columns = {'COLE_MCPIO_UBICACION':'Municipio','COLE_NOMBRE_ESTABLECIMIENTO':'Nombre del Colegio', 'PUNT_GLOBAL':'Puntaje'}, inplace = True)
     st.write("### Mejor puntaje de pruebas saber de cada colegio por municipio")
-    df = data_atlantico[['COLE_MCPIO_UBICACION','PUNT_GLOBAL','COLE_NOMBRE_ESTABLECIMIENTO']].sort_values(by='PUNT_GLOBAL',ascending=False).reset_index(drop=True)
-    st.write(df[['COLE_MCPIO_UBICACION','COLE_NOMBRE_ESTABLECIMIENTO','PUNT_GLOBAL']],use_column_width=True)
+    df = data_atlantico[['Municipio','Puntaje','Nombre del Colegio']].sort_values(by='Puntaje',ascending=False).reset_index(drop=True)
+    st.write(df[['Municipio','Nombre del Colegio','Puntaje']],use_column_width=True)
     text = '''---'''
     st.markdown(text)
 
@@ -116,179 +115,52 @@ def mapa():
     
 # Tabla de mejores percentiles por colegio y por municipio
 def mejores_percentiles(data):
-        data_atlantico = data[data["COLE_DEPTO_UBICACION"] == "ATLANTICO"]
-
-        st.write("### Mejores percentiles de matemáticas por colegio ")
-        data_atlantico.rename(columns = {'COLE_NOMBRE_ESTABLECIMIENTO':'Nombre del Colegio'}, inplace = True)
-        df = data_atlantico[['Nombre del Colegio','COLE_MCPIO_UBICACION','PERCENTIL_LECTURA_CRITICA','PERCENTIL_MATEMATICAS','PERCENTIL_C_NATURALES','PERCENTIL_SOCIALES_CIUDADANAS','PERCENTIL_INGLES']]
-        df=df.groupby(['Nombre del Colegio',"COLE_MCPIO_UBICACION"],dropna=False).agg(Percentil_Mat=('PERCENTIL_MATEMATICAS','mean')).reset_index()
-        df=df.sort_values(by=['Percentil_Mat'],ascending=False).reset_index(drop=True)
+    data_atlantico = data[data["COLE_DEPTO_UBICACION"] == "ATLANTICO"]
+    
+    data_atlantico.rename(columns = {'COLE_MCPIO_UBICACION':'Municipio','COLE_NOMBRE_ESTABLECIMIENTO':'Nombre del Colegio','PERCENTIL_LECTURA_CRITICA':'Percentil Lectura Crítica','PERCENTIL_MATEMATICAS':'Percentil Matemáticas','PERCENTIL_C_NATURALES':'Percentil C. Naturales','PERCENTIL_SOCIALES_CIUDADANAS':'Percentil Comp. Ciudadanas','PERCENTIL_INGLES':'Percentil Inglés'}, inplace = True)
+    materia = st.selectbox(label='Escoja una materia',options=['Percentil Lectura Crítica','Percentil Matemáticas','Percentil C. Naturales','Percentil Comp. Ciudadanas','Percentil Inglés'],help='Si no se selecciona uno, por defecto se escogeran todos',key=999)
+    if materia:
+        st.write("### Mejores percentiles de "+materia+" por colegio ")
+        df = data_atlantico[['Nombre del Colegio','Municipio','Percentil Lectura Crítica','Percentil Matemáticas','Percentil C. Naturales','Percentil Comp. Ciudadanas','Percentil Inglés']]
+        df=df.groupby(['Nombre del Colegio',"Municipio"],dropna=False).agg(Percentil=(materia,'mean')).reset_index()
+        df=df.sort_values(by=['Percentil'],ascending=False).reset_index(drop=True)
         st.write(df,use_column_width=True)
 
         col1, col2, col3 = st.columns(3)
-        col1.metric("Media",round(data_atlantico["PERCENTIL_MATEMATICAS"].mean(),1))
-        col2.metric("Varianza ",round(data_atlantico["PERCENTIL_MATEMATICAS"].var(),1))
-        col3.metric("Desviación Estandar",round(data_atlantico["PERCENTIL_MATEMATICAS"].std(),1))
+        col1.metric("Media",round(data_atlantico[materia].mean(),1))
+        col2.metric("Varianza ",round(data_atlantico[materia].var(),1))
+        col3.metric("Desviación Estandar",round(data_atlantico[materia].std(),1))
 
-        municipio = st.multiselect(label='Escoja un municipio',options=data_atlantico["COLE_MCPIO_UBICACION"].unique(),help='Si no se selecciona uno, por defecto se escogeran todos')
-        colegio = st.multiselect(label='Escoja un colegio',options=data_atlantico[data_atlantico["COLE_MCPIO_UBICACION"].isin(municipio)]["Nombre del Colegio"].unique(),help='Si no se selecciona uno, por defecto se escogeran todos')
-        if len(municipio) > 0 and len(colegio) > 0:
-            colegio_percentiles = data_atlantico[data_atlantico["Nombre del Colegio"].isin(colegio)]["PERCENTIL_MATEMATICAS"]
-            colegio_percentiles =  colegio_percentiles.sort_values().reset_index(drop=True)
-            x=colegio_percentiles.tolist()
-            # histograma de distribución normal.
-            fig, ax = plt.subplots()
-            ax.hist(x, bins=50)
-            st.pyplot(fig)
-            #-----------------------------------------------------------
-            media=round(data_atlantico["PERCENTIL_MATEMATICAS"].mean(),1)
-            std=round(data_atlantico["PERCENTIL_MATEMATICAS"].std(),1)
-            x=colegio_percentiles.tolist()
-            print(x)
-            fig, ax = plt.subplots()
-            ax.plot(x, norm.pdf(x, media, std))
-
-            st.write(fig)
-            
-
-            
-        text = '''---'''
+        text='''
+        A continuación se elige un municipio, y respecto a ese municipio se elige un colegio, esto para obtener una gráfica de frecuencia y una Campana de Gauss el cual son gráficos que expresan de forma más visual el comportamiento de los datos. Esto para poder concluir si el colegio es malo, regular o bueno. 
+        '''
         st.markdown(text)
 
-        st.write("### Mejores percentiles de lectura crítica por colegio ")
-        df = data_atlantico[['Nombre del Colegio','COLE_MCPIO_UBICACION','PERCENTIL_LECTURA_CRITICA','PERCENTIL_MATEMATICAS','PERCENTIL_C_NATURALES','PERCENTIL_SOCIALES_CIUDADANAS','PERCENTIL_INGLES']]
-        df=df.groupby(['Nombre del Colegio',"COLE_MCPIO_UBICACION"],dropna=False).agg(Percentil_Lect_Crit=('PERCENTIL_LECTURA_CRITICA','mean')).reset_index()
-        df=df.sort_values(by=['Percentil_Lect_Crit'],ascending=False).reset_index(drop=True)
-        st.write(df,use_column_width=True)
-
-        col_1, col_2, col_3 = st.columns(3)
-        col_1.metric("Media",round(data_atlantico["PERCENTIL_LECTURA_CRITICA"].mean(),1))
-        col_2.metric("Varianza ",round(data_atlantico["PERCENTIL_LECTURA_CRITICA"].var(),1))
-        col_3.metric("Desviación Estandar",round(data_atlantico["PERCENTIL_LECTURA_CRITICA"].std(),1))
-
-        municipio = st.multiselect(label='Escoja un municipio',options=data_atlantico["COLE_MCPIO_UBICACION"].unique(),help='Si no se selecciona uno, por defecto se escogeran todos',key=1000)
-        colegio = st.multiselect(label='Escoja un colegio',options=data_atlantico[data_atlantico["COLE_MCPIO_UBICACION"].isin(municipio)]["Nombre del Colegio"].unique(),help='Si no se selecciona uno, por defecto se escogeran todos',key=1001)
-        if len(municipio) > 0 and len(colegio) > 0:
-            colegio_percentiles = data_atlantico[data_atlantico["Nombre del Colegio"].isin(colegio)]["PERCENTIL_LECTURA_CRITICA"]
-            colegio_percentiles =  colegio_percentiles.sort_values().reset_index(drop=True)
-            x=colegio_percentiles.tolist()
-            # histograma de distribución normal.
-            fig, ax = plt.subplots()
-            ax.hist(x, bins=50)
-            st.pyplot(fig)
-            #-----------------------------------------------------------
-            media=round(data_atlantico["PERCENTIL_LECTURA_CRITICA"].mean(),1)
-            std=round(data_atlantico["PERCENTIL_LECTURA_CRITICA"].std(),1)
-            x=colegio_percentiles.tolist()
-            print(x)
-            fig, ax = plt.subplots()
-            ax.plot(x, norm.pdf(x, media, std))
-
-            st.write(fig)
-
-        text = '''---'''
-        st.markdown(text)
-
-        st.write("### Mejores percentiles de ciencias naturales por colegio ")
-        df = data_atlantico[['Nombre del Colegio','COLE_MCPIO_UBICACION','PERCENTIL_LECTURA_CRITICA','PERCENTIL_MATEMATICAS','PERCENTIL_C_NATURALES','PERCENTIL_SOCIALES_CIUDADANAS','PERCENTIL_INGLES']]
-        df=df.groupby(['Nombre del Colegio',"COLE_MCPIO_UBICACION"],dropna=False).agg(PERCENTIL_C_NATURALES=('PERCENTIL_C_NATURALES','mean')).reset_index()
-        df=df.sort_values(by=['PERCENTIL_C_NATURALES'],ascending=False).reset_index(drop=True)
-        st.write(df,use_column_width=True)
-
-        col_1, col_2, col_3 = st.columns(3)
-        col_1.metric("Media",round(data_atlantico["PERCENTIL_C_NATURALES"].mean(),1))
-        col_2.metric("Varianza ",round(data_atlantico["PERCENTIL_C_NATURALES"].var(),1))
-        col_3.metric("Desviación Estandar",round(data_atlantico["PERCENTIL_C_NATURALES"].std(),1))
-
-        municipio = st.multiselect(label='Escoja un municipio',options=data_atlantico["COLE_MCPIO_UBICACION"].unique(),help='Si no se selecciona uno, por defecto se escogeran todos',key=1002)
-        colegio = st.multiselect(label='Escoja un colegio',options=data_atlantico[data_atlantico["COLE_MCPIO_UBICACION"].isin(municipio)]["Nombre del Colegio"].unique(),help='Si no se selecciona uno, por defecto se escogeran todos',key=1003)
-        if len(municipio) > 0 and len(colegio) > 0:
-            colegio_percentiles = data_atlantico[data_atlantico["Nombre del Colegio"].isin(colegio)]["PERCENTIL_C_NATURALES"]
-            colegio_percentiles =  colegio_percentiles.sort_values().reset_index(drop=True)
-            x=colegio_percentiles.tolist()
-            # histograma de distribución normal.
-            fig, ax = plt.subplots()
-            ax.hist(x, bins=50)
-            st.pyplot(fig)
-            #-----------------------------------------------------------
-            media=round(data_atlantico["PERCENTIL_C_NATURALES"].mean(),1)
-            std=round(data_atlantico["PERCENTIL_C_NATURALES"].std(),1)
-            x=colegio_percentiles.tolist()
-            print(x)
-            fig, ax = plt.subplots()
-            ax.plot(x, norm.pdf(x, media, std))
-
-            st.write(fig)
-
-        text = '''---'''
-        st.markdown(text)
-
-        st.write("### Mejores percentiles de sociales por colegio ")
-        df = data_atlantico[['Nombre del Colegio','COLE_MCPIO_UBICACION','PERCENTIL_LECTURA_CRITICA','PERCENTIL_MATEMATICAS','PERCENTIL_C_NATURALES','PERCENTIL_SOCIALES_CIUDADANAS','PERCENTIL_INGLES']]
-        df=df.groupby(['Nombre del Colegio',"COLE_MCPIO_UBICACION"],dropna=False).agg(Percentil_sociales_ciudadana=('PERCENTIL_SOCIALES_CIUDADANAS','mean')).reset_index()
-        df=df.sort_values(by=['Percentil_sociales_ciudadana'],ascending=False).reset_index(drop=True)
-        st.write(df,use_column_width=True)
-
-        col_1, col_2, col_3 = st.columns(3)
-        col_1.metric("Media",round(data_atlantico["PERCENTIL_SOCIALES_CIUDADANAS"].mean(),1))
-        col_2.metric("Varianza ",round(data_atlantico["PERCENTIL_SOCIALES_CIUDADANAS"].var(),1))
-        col_3.metric("Desviación Estandar",round(data_atlantico["PERCENTIL_SOCIALES_CIUDADANAS"].std(),1))
-
-        municipio = st.multiselect(label='Escoja un municipio',options=data_atlantico["COLE_MCPIO_UBICACION"].unique(),help='Si no se selecciona uno, por defecto se escogeran todos',key=1004)
-        colegio = st.multiselect(label='Escoja un colegio',options=data_atlantico[data_atlantico["COLE_MCPIO_UBICACION"].isin(municipio)]["Nombre del Colegio"].unique(),help='Si no se selecciona uno, por defecto se escogeran todos',key=1005)
-        if len(municipio) > 0 and len(colegio) > 0:
-            colegio_percentiles = data_atlantico[data_atlantico["Nombre del Colegio"].isin(colegio)]["PERCENTIL_SOCIALES_CIUDADANAS"]
-            colegio_percentiles =  colegio_percentiles.sort_values().reset_index(drop=True)
-            x=colegio_percentiles.tolist()
-            # histograma de distribución normal.
-            fig, ax = plt.subplots()
-            ax.hist(x, bins=50)
-            st.pyplot(fig)
-            #-----------------------------------------------------------
-            media=round(data_atlantico["PERCENTIL_SOCIALES_CIUDADANAS"].mean(),1)
-            std=round(data_atlantico["PERCENTIL_SOCIALES_CIUDADANAS"].std(),1)
-            x=colegio_percentiles.tolist()
-            print(x)
-            fig, ax = plt.subplots()
-            ax.plot(x, norm.pdf(x, media, std))
-
-            st.write(fig)
-            
-        text = '''---'''
-        st.markdown(text)
-
-        st.write("### Mejores percentiles de inglés por colegio.")
-        df = data_atlantico[['Nombre del Colegio','COLE_MCPIO_UBICACION','PERCENTIL_LECTURA_CRITICA','PERCENTIL_MATEMATICAS','PERCENTIL_C_NATURALES','PERCENTIL_SOCIALES_CIUDADANAS','PERCENTIL_INGLES']]
-        df=df.groupby(['Nombre del Colegio',"COLE_MCPIO_UBICACION"],dropna=False).agg(Percentil_ingle=('PERCENTIL_INGLES','mean')).reset_index()
         
-        df=df.sort_values(by=['Percentil_ingle'],ascending=False).reset_index(drop=True)
-        st.write(df,use_column_width=True)
-
-        col_1, col_2, col_3 = st.columns(3)
-        col_1.metric("Media",round(data_atlantico["PERCENTIL_INGLES"].mean(),1))
-        col_2.metric("Varianza ",round(data_atlantico["PERCENTIL_INGLES"].var(),1))
-        col_3.metric("Desviación Estandar",round(data_atlantico["PERCENTIL_INGLES"].std(),1))
-
-        municipio = st.multiselect(label='Escoja un municipio',options=data_atlantico["COLE_MCPIO_UBICACION"].unique(),help='Si no se selecciona uno, por defecto se escogeran todos',key=1006)
-        colegio = st.multiselect(label='Escoja un colegio',options=data_atlantico[data_atlantico["COLE_MCPIO_UBICACION"].isin(municipio)]["Nombre del Colegio"].unique(),help='Si no se selecciona uno, por defecto se escogeran todos',key=1007)
-        if len(municipio) > 0 and len(colegio) > 0:
-            colegio_percentiles = data_atlantico[data_atlantico["Nombre del Colegio"].isin(colegio)]["PERCENTIL_INGLES"]
+        municipio = st.selectbox(label='Escoja un municipio',options=data_atlantico["Municipio"].unique(),help='Si no se selecciona uno, por defecto se escogeran todos')
+        colegio = st.selectbox(label='Escoja un colegio',options=data_atlantico[data_atlantico["Municipio"]==municipio]["Nombre del Colegio"].unique(),help='Si no se selecciona uno, por defecto se escogeran todos')
+        if municipio and colegio:
+            colegio_percentiles = data_atlantico[data_atlantico["Nombre del Colegio"]==colegio][materia]
             colegio_percentiles =  colegio_percentiles.sort_values().reset_index(drop=True)
             x=colegio_percentiles.tolist()
-            # histograma de distribución normal.
             fig, ax = plt.subplots()
             ax.hist(x, bins=50)
             st.pyplot(fig)
             #-----------------------------------------------------------
-            media=round(data_atlantico["PERCENTIL_INGLES"].mean(),1)
-            std=round(data_atlantico["PERCENTIL_INGLES"].std(),1)
+            media=round(data_atlantico[materia].mean(),1)
+            std=round(data_atlantico[materia].std(),1)
             x=colegio_percentiles.tolist()
-            print(x)
             fig, ax = plt.subplots()
             ax.plot(x, norm.pdf(x, media, std))
 
             st.write(fig)
+            
 
+            
+        text = '''---'''
+        st.markdown(text)
+
+        
 
 
 
