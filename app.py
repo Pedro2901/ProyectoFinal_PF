@@ -7,6 +7,8 @@ from conexion_sql_server import info
 from utils import geo_json_mncp,load_pregunta
 APIKEY = "cbff05426dd10f787f758fd2cc3af796"
 data=pd.read_csv("Excel-Atlantico.csv")
+data_db=info()
+#print(data_db)
 
 
 
@@ -48,9 +50,7 @@ def app():
 
     st.write("## Análisis de los percentiles de cada materia evaluada en las pruebas saber.")
     text='''
-        En las siguientes tablas se refleja los percentiles de cada materia evaluada en las pruebas saber en el segundo semestre del año 2020. Los cuales se usarán para responder a la siguente pregunta: 
-
-        #### ¿Cuál colegio es mejor para mi hijo? si quiero que obtenga una beca por excelentes resultados en las pruebas saber.
+        En las siguientes tablas se refleja los percentiles de cada materia evaluada en las pruebas saber en el segundo semestre del año 2020.
 
         A continuación se presenta una lista desplegable en la cual se podrá escoger un percentil de una de las materias evaluadas en las pruebas saber, esto para poder analizar su comportamiento y así poder llegar a ciertas conclusiones sobre la pregunta anterior. Cada materia muestra una tabla que contiene el nombre del colegio, el departamento al que pertenece y el promedio por colegio del percentil escogido. Abajo de este encontrará unas medidas de estadistica descriptiva. Estas son la [Media aritmética](https://es.wikipedia.org/wiki/Media_aritm%C3%A9tica), la [Varianza](https://es.wikipedia.org/wiki/Varianza) y la [Desviación Estandar](https://es.wikipedia.org/wiki/Desviaci%C3%B3n_t%C3%ADpicaDesviación) respectivamente.
 
@@ -142,7 +142,7 @@ def mejores_percentiles(data):
         La Media aritmetica, la Varianza y la Desviación Estandar son medidas de dispersión estadistica las cuales muestran de forma general como se comportan los datos. La media es un promedio de todos los percentiles de la materia; la varianza es la diferencia entre los datos y la media aritmetica y la desviación estandar es que tan cerca están los datos de su media, si este valor es pequeño significa que los datos están muy cerca y en el caso contrario que estan muy lejanos.
 
 
-        A continuación se elige un municipio, y respecto a ese municipio se elige un colegio, esto para obtener unas gráficas las cuales son gráficas que expresan de forma más visual el comportamiento de los datos. Esto para poder concluir si el colegio es malo, regular o bueno. 
+        A continuación se elige un municipio, y respecto a ese municipio se elige un colegio, esto para obtener unas gráficas las cuales son gráficas que expresan de forma más visual el comportamiento de los datos.
         '''
         st.markdown(text)
 
@@ -158,7 +158,7 @@ def mejores_percentiles(data):
             ax.hist(x, bins=50)
             st.pyplot(fig)
             text='''
-            Aquí vemos una gráfica de frecuencia, la cual muestra la repetición de algunos datos, esto nos ayuda a ver cuales son los puntajes más sacados en este colegio. Gracias a esto podemos hacernos una idea de que tan bueno el colegio en esta materia.
+            Aquí vemos una gráfica de frecuencia, la cual muestra la repetición de algunos datos, esto nos ayuda a ver cuales son los puntajes más sacados en este colegio.
             '''
             st.markdown(text)
             #-----------------------------------------------------------
