@@ -5,3 +5,4 @@ numpy
 modin
 matplotlib
 scipy
+pyodbc
