@@ -15,10 +15,6 @@ def load_data(sample=True):
     else:
         return pd.read_csv(f'{path}/data/20202.csv')
 
-def geo_json_dpto():
-    with open(f'{path}/data/departamentos.geo.json',"rb") as f:
-        return json.load(f)
-
 #@st.cache
 def geo_json_mncp():
     with open(f'{path}/data/municipios.geojson',"rb") as f:
