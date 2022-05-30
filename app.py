@@ -1,17 +1,11 @@
 import streamlit as st
-import pandas as pd
 import plotly.express as px
 import matplotlib.pyplot as plt
 from scipy.stats import norm
 from conexion_sql_server import info 
 from utils import geo_json_mncp,load_pregunta
 APIKEY = "cbff05426dd10f787f758fd2cc3af796"
-#data=pd.read_csv("Excel-Atlantico.csv")
 data=info()
-
-#print(data_db)
-
-
 
 def app():
     st.title("Sistema de recolección, visualización y análisis de datos de colegios del departamento del Atlántico")
@@ -120,8 +114,7 @@ def mapa():
     text = '''---'''
     st.markdown(text)
 
-    
-# Tabla de mejores percentiles por colegio y por municipio
+
 def mejores_percentiles(data):
     data_atlantico = data[data["COLE_DEPTO_UBICACION"] == "ATLANTICO"]
     
@@ -138,8 +131,8 @@ def mejores_percentiles(data):
 
         col1, col2, col3 = st.columns(3)
         
-        
-        col1.metric("Media",round(data_atlantico[materia].mean(),1))
+        media_general = round(data_atlantico[materia].mean(),1)
+        col1.metric("Media",media_general)
         col2.metric("Varianza ",round(data_atlantico[materia].var(),1))
         col3.metric("Desviación Estandar",round(data_atlantico[materia].std(),1))
 
@@ -155,37 +148,33 @@ def mejores_percentiles(data):
         municipio = st.selectbox(label='Escoja un municipio',options=data_atlantico["Municipio"].unique(),help='Por defecto se escogerá el primero de la lista.')
         colegio = st.selectbox(label='Escoja un colegio',options=data_atlantico[data_atlantico["Municipio"]==municipio]["Nombre del Colegio"].unique(),help='Por defecto se escogerá el primero de la lista.')
         if municipio and colegio:
-
             colegio_percentiles = data_atlantico[data_atlantico["Nombre del Colegio"]==colegio][materia]
             colegio_percentiles =  colegio_percentiles.sort_values().reset_index(drop=True)
             x=colegio_percentiles.tolist()
             fig, ax = plt.subplots()
             ax.hist(x, bins=50)
+            ax.set_xlabel("Puntaje del percentil")
+            ax.set_ylabel("Cantidad de estudiantes")
             st.pyplot(fig)
             text='''
             Aquí vemos una gráfica de frecuencia, la cual muestra la repetición de algunos datos, esto nos ayuda a ver cuales son los puntajes más sacados en este colegio.
             '''
             st.markdown(text)
             #-----------------------------------------------------------
-            media=round(data_atlantico[materia].mean(),1)
-            std=round(data_atlantico[materia].std(),1)
+            media=round(data_atlantico[materia].mean())
+            std=round(data_atlantico[materia].std())
             x=colegio_percentiles.tolist()
             fig, ax = plt.subplots()
             ax.plot(x, norm.pdf(x, media, std))
+            ax.axvline(x=media_general,ymin=0, ymax=10, color='r')
+            ax.set_xlabel("Puntaje del percentil")
+            ax.set_ylabel("Porcentaje de estudiantes")
             st.write(fig)
             text='''
             Aquí vemos una gráfica de una función gaussiana o "campana de gauss", la cual nos muestra en donde se concentra la mayor cantidad de puntajes, esto con respecto a la media general de los percentiles (que se encuentra en el medio del eje X o eje horizontal) y su desviación estandar. En el eje Y o eje vertical se encuentran el porcentaje de los datos, y en el eje X o eje horizontal se encuentran los puntajes. Esta gráfica nos ayuda a ver que tan por debajo o que tan por alto está el porcentaje de puntajes de la media o promedio. Esto nos ayuda a concluir si es más probable un buen resultado o un mal resultado.
             '''
             st.markdown(text)
-            
-
-            
         text = '''---'''
         st.markdown(text)
-
-
-        
-
-
 
 app()
