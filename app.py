@@ -14,7 +14,13 @@ def app():
     text =  '''
     Este es un prototipo funcional de una página web con el objetivo de mostrar información relevante sobre los colegios del departamento del Atlántico, para así, poder informar a los padres de familia y apoyarlos en una posible elección de colegio para su hijo.
 
-    Este proyecto fue creado y desarrollado por estudiantes de Ingeniería de Sistemas y Computación de la Universidad del Norte como proyecto de grado.
+    Este proyecto fue creado y desarrollado como proyecto de grado por:
+    
+    - Diego Andrés Cavadia Montes - dcavadia@uninorte.edu.co
+    - Jose María Camelo Mercado - jmcamelo@uninorte.edu.co
+    - Pedro Pablo Jimenez de la Hoz - ppjimenez@uninorte.edu.co
+
+    Y somos estudiantes de Ingeniería de Sistemas y Computación de la Universidad del Norte.
 
     #### Indice:    
     - ¿Cuántos colegios hay en el departamento del Atlántico?
