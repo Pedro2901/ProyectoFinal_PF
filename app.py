@@ -131,7 +131,6 @@ def mejores_percentiles(data):
         st.write(df,use_column_width=True)
 
         col1, col2, col3 = st.columns(3)
-        
         media_general = round(data_atlantico[materia].mean(),1)
         col1.metric("Media",media_general)
         col2.metric("Varianza ",round(data_atlantico[materia].var(),1))
@@ -149,6 +148,7 @@ def mejores_percentiles(data):
         municipio = st.selectbox(label='Escoja un municipio',options=data_atlantico["Municipio"].unique(),help='Por defecto se escogerá el primero de la lista.')
         colegio = st.selectbox(label='Escoja un colegio',options=data_atlantico[data_atlantico["Municipio"]==municipio]["Nombre del Colegio"].unique(),help='Por defecto se escogerá el primero de la lista.')
         if municipio and colegio:
+            st.write("#### Diagrama de Densidad")
             colegio_percentiles = data_atlantico[data_atlantico["Nombre del Colegio"]==colegio][materia]
             colegio_percentiles =  colegio_percentiles.sort_values().reset_index(drop=True)
             x=colegio_percentiles.tolist()
@@ -160,11 +160,12 @@ def mejores_percentiles(data):
             Esta es una gráfica de densidad, la cual se puede ver la distribución que tienen los datos, en el cual los picos del gráfico nos ayudan a mostrar dónde los valores se concentran en el intervalo. Estos gráficos son mejores en la demostración del comportamiento de unos datos especificos.
             '''
             st.markdown(text)
-            #-----------------------------------------------------------            
+            #-----------------------------------------------------------          
+            st.write("#### Diagrama de Caja y Bigotes")  
             fig = px.box(colegio_percentiles, y=materia)    
             st.plotly_chart(fig)
             text='''
-            Esta es una gráfica de caja y bigote, el cual nos ayuda a ver tanto dispersion de los datos como su simetría. Dentro de la caja están los datos más agrupados. las líneas que se extienden paralelas a las cajas se conocen como «bigotes», y se usan para indicar variabilidad fuera de los cuartiles superior e inferior. Los valores atípicos se representan a veces como puntos individuales que están en línea con los bigotes. Esta es una muy buena gráfica para mirar el comportamiento de estos datos.
+            Esta es una gráfica de caja y bigote, el cual nos ayuda a ver tanto dispersion de los datos como su simetría. Dentro de la caja están los datos más agrupados. las líneas que se extienden paralelas a las cajas se conocen como "bigotes", y se usan para indicar variabilidad fuera de los cuartiles superior e inferior. Los valores atípicos se representan a veces como puntos individuales que están en línea con los bigotes. Esta es una muy buena gráfica para mirar el comportamiento de estos datos.
             '''
             st.markdown(text)
         text = '''---'''
