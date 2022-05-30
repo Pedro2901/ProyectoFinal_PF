@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import norm
 from conexion_sql_server import info 
 from utils import geo_json_mncp,load_pregunta
+import plotly.figure_factory as ff
 APIKEY = "cbff05426dd10f787f758fd2cc3af796"
 data=info()
 
@@ -151,27 +152,19 @@ def mejores_percentiles(data):
             colegio_percentiles = data_atlantico[data_atlantico["Nombre del Colegio"]==colegio][materia]
             colegio_percentiles =  colegio_percentiles.sort_values().reset_index(drop=True)
             x=colegio_percentiles.tolist()
-            fig, ax = plt.subplots()
-            ax.hist(x, bins=50)
-            ax.set_xlabel("Puntaje del percentil")
-            ax.set_ylabel("Cantidad de estudiantes")
-            st.pyplot(fig)
+            group_labels = ['Percentiles'] # name of the dataset
+            hist_data = [x]
+            fig = ff.create_distplot(hist_data,group_labels)
+            st.plotly_chart(fig)
             text='''
-            Aquí vemos una gráfica de frecuencia, la cual muestra la repetición de algunos datos, esto nos ayuda a ver cuales son los puntajes más sacados en este colegio.
+            Esta es una gráfica de densidad, la cual se puede ver la distribución que tienen los datos, en el cual los picos del gráfico nos ayudan a mostrar dónde los valores se concentran en el intervalo. Estos gráficos son mejores en la demostración del comportamiento de unos datos especificos.
             '''
             st.markdown(text)
-            #-----------------------------------------------------------
-            media=round(data_atlantico[materia].mean())
-            std=round(data_atlantico[materia].std())
-            x=colegio_percentiles.tolist()
-            fig, ax = plt.subplots()
-            ax.plot(x, norm.pdf(x, media, std))
-            ax.axvline(x=media_general,ymin=0, ymax=10, color='r')
-            ax.set_xlabel("Puntaje del percentil")
-            ax.set_ylabel("Porcentaje de estudiantes")
-            st.write(fig)
+            #-----------------------------------------------------------            
+            fig = px.box(colegio_percentiles, y=materia)    
+            st.plotly_chart(fig)
             text='''
-            Aquí vemos una gráfica de una función gaussiana o "campana de gauss", la cual nos muestra en donde se concentra la mayor cantidad de puntajes, esto con respecto a la media general de los percentiles (que se encuentra en el medio del eje X o eje horizontal) y su desviación estandar. En el eje Y o eje vertical se encuentran el porcentaje de los datos, y en el eje X o eje horizontal se encuentran los puntajes. Esta gráfica nos ayuda a ver que tan por debajo o que tan por alto está el porcentaje de puntajes de la media o promedio. Esto nos ayuda a concluir si es más probable un buen resultado o un mal resultado.
+            Esta es una gráfica de caja y bigote, el cual nos ayuda a ver tanto dispersion de los datos como su simetría. Dentro de la caja están los datos más agrupados. las líneas que se extienden paralelas a las cajas se conocen como «bigotes», y se usan para indicar variabilidad fuera de los cuartiles superior e inferior. Los valores atípicos se representan a veces como puntos individuales que están en línea con los bigotes. Esta es una muy buena gráfica para mirar el comportamiento de estos datos.
             '''
             st.markdown(text)
         text = '''---'''
