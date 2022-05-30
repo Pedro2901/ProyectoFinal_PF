@@ -6,8 +6,9 @@ from scipy.stats import norm
 from conexion_sql_server import info 
 from utils import geo_json_mncp,load_pregunta
 APIKEY = "cbff05426dd10f787f758fd2cc3af796"
-data=pd.read_csv("Excel-Atlantico.csv")
-data_db=info()
+#data=pd.read_csv("Excel-Atlantico.csv")
+data=info()
+
 #print(data_db)
 
 
@@ -128,12 +129,16 @@ def mejores_percentiles(data):
     materia = st.selectbox(label='Escoja una materia',options=['Percentil Lectura Crítica','Percentil Matemáticas','Percentil C. Naturales','Percentil Comp. Ciudadanas','Percentil Inglés'],help='Por defecto se escogerá el primero de la lista.',key=999)
     if materia:
         st.write("### Mejores percentiles de "+materia+" por colegio ")
+        data_atlantico[materia]=data_atlantico[materia].astype(float)
         df = data_atlantico[['Nombre del Colegio','Municipio','Percentil Lectura Crítica','Percentil Matemáticas','Percentil C. Naturales','Percentil Comp. Ciudadanas','Percentil Inglés']]
+        df[materia]=df[materia].astype('int64')
         df=df.groupby(['Nombre del Colegio',"Municipio"],dropna=False).agg(Percentil=(materia,'mean')).reset_index()
         df=df.sort_values(by=['Percentil'],ascending=False).reset_index(drop=True)
         st.write(df,use_column_width=True)
 
         col1, col2, col3 = st.columns(3)
+        
+        
         col1.metric("Media",round(data_atlantico[materia].mean(),1))
         col2.metric("Varianza ",round(data_atlantico[materia].var(),1))
         col3.metric("Desviación Estandar",round(data_atlantico[materia].std(),1))
